@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Premium SGPA Calculator Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    
     <style>
         :root {
             --primary: #4361ee;
@@ -19,37 +22,40 @@
             --dark: #212529;
             --bg-light: #ffffff;
             --bg-dark: #121212;
-            --card-light: #ffffff;
-            --card-dark: #1e1e1e;
+            --card-light: rgba(255, 255, 255, 0.85);
+            --card-dark: rgba(30, 30, 30, 0.85);
             --text-light: #333333;
             --text-dark: #f0f0f0;
-            --border-light: #e0e0e0;
-            --border-dark: #333333;
-            --shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --border-light: rgba(224, 224, 224, 0.5);
+            --border-dark: rgba(51, 51, 51, 0.5);
+            --shadow: 0 10px 30px rgba(0,0,0,0.05);
             --transition: all 0.3s ease;
             --border-radius: 16px;
-            --glow: 0 0 15px rgba(67, 97, 238, 0.5);
+            --glow: 0 0 15px rgba(67, 97, 238, 0.3);
+            --glass: rgba(255, 255, 255, 0.15);
+            --glass-dark: rgba(0, 0, 0, 0.15);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e7f1 100%);
+            background: linear-gradient(135deg, #f0f5ff 0%, #e6edff 100%);
             color: var(--text-light);
             min-height: 100vh;
             transition: var(--transition);
             padding: 20px;
             position: relative;
             overflow-x: hidden;
+            backdrop-filter: blur(20px);
         }
 
         body.dark-mode {
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 100%);
+            background: linear-gradient(135deg, #0c0e2b 0%, #1a1a40 100%);
             color: var(--text-dark);
         }
 
@@ -65,21 +71,28 @@
             width: 600px;
             height: 600px;
             border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.15;
+            filter: blur(100px);
+            opacity: 0.1;
             z-index: 1;
+            animation: float 15s infinite ease-in-out;
         }
 
         .blob-1 {
             background: var(--primary);
-            top: -300px;
-            right: -200px;
+            top: 10%;
+            right: -10%;
         }
 
         .blob-2 {
             background: var(--accent);
-            bottom: -300px;
-            left: -200px;
+            bottom: 10%;
+            left: -10%;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            50% { transform: translate(-20px, 20px); }
+            100% { transform: translate(0, 0); }
         }
 
         header {
@@ -100,7 +113,7 @@
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             width: 50px;
             height: 50px;
-            border-radius: 12px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -111,9 +124,9 @@
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.4); }
+            70% { transform: scale(1.03); box-shadow: 0 0 0 15px rgba(67, 97, 238, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(67, 97, 238, 0); }
         }
 
         .logo-text {
@@ -123,6 +136,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: -0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .theme-toggle {
@@ -152,6 +166,7 @@
             top: 2px;
             left: 3px;
             transition: var(--transition);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
         body.dark-mode .theme-toggle::before {
@@ -166,6 +181,12 @@
             margin-bottom: 30px;
         }
 
+        @media (max-width: 900px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .main-content {
             display: flex;
             flex-direction: column;
@@ -173,21 +194,21 @@
         }
 
         .card {
-            background: var(--bg-light);
+            background: var(--card-light);
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
             padding: 30px;
             transition: var(--transition);
-            backdrop-filter: blur(10px);
-            background-color: rgba(255, 255, 255, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-light);
             position: relative;
             overflow: hidden;
+            z-index: 2;
         }
 
         body.dark-mode .card {
-            background: rgba(30, 30, 30, 0.85);
-            border-color: rgba(255, 255, 255, 0.1);
+            background: var(--card-dark);
+            border-color: var(--border-dark);
         }
 
         .card::before {
@@ -206,7 +227,7 @@
             align-items: center;
             margin-bottom: 25px;
             padding-bottom: 15px;
-            border-bottom: 2px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
         }
 
         body.dark-mode .card-header {
@@ -301,15 +322,15 @@
             width: 100%;
             padding: 14px;
             border-radius: 12px;
-            border: 2px solid var(--border-light);
+            border: 1px solid var(--border-light);
             background: var(--bg-light);
             color: var(--text-light);
             font-size: 16px;
             transition: var(--transition);
         }
 
-        body.dark-mode input, 
-        body.dark-mode select, 
+        body.dark-mode input,
+        body.dark-mode select,
         body.dark-mode textarea {
             background: var(--card-dark);
             border-color: var(--border-dark);
@@ -338,10 +359,29 @@
             transition: var(--transition);
             width: 100%;
             box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .add-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: 0.5s;
+            z-index: -1;
+        }
+
+        .add-btn:hover::before {
+            left: 100%;
         }
 
         .add-btn:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
             box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
         }
 
@@ -370,7 +410,7 @@
             border-bottom: 1px solid var(--border-light);
         }
 
-        body.dark-mode th, 
+        body.dark-mode th,
         body.dark-mode td {
             border-bottom-color: var(--border-dark);
         }
@@ -445,6 +485,13 @@
             position: relative;
             z-index: 2;
             text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.5s ease;
+        }
+
+        @keyframes pulse-sgpa {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
         .sgpa-scale {
@@ -466,6 +513,12 @@
             grid-template-columns: 1fr 1fr;
             gap: 15px;
             margin-top: 25px;
+        }
+
+        @media (max-width: 600px) {
+            .export-actions {
+                grid-template-columns: 1fr;
+            }
         }
 
         .export-btn {
@@ -499,6 +552,11 @@
             opacity: 1;
         }
 
+        .export-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
         .export-btn.pdf {
             background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
             color: white;
@@ -509,11 +567,6 @@
             background: linear-gradient(135deg, #4cc9f0, #6bd6ff);
             color: white;
             box-shadow: 0 4px 15px rgba(76, 201, 240, 0.3);
-        }
-
-        .export-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
         }
 
         .features-grid {
@@ -532,10 +585,13 @@
             gap: 15px;
             transition: var(--transition);
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-light);
         }
 
         body.dark-mode .feature-card {
             background: var(--card-dark);
+            border-color: var(--border-dark);
         }
 
         .feature-icon {
@@ -548,6 +604,7 @@
             justify-content: center;
             color: white;
             font-size: 20px;
+            flex-shrink: 0;
         }
 
         .feature-text h3 {
@@ -603,25 +660,34 @@
             background: rgba(255, 107, 107, 0.1);
         }
 
-        @media (max-width: 900px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #777;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+
+        .highlight {
+            animation: highlight 2s ease;
+        }
+
+        @keyframes highlight {
+            0% { background: rgba(76, 201, 240, 0.3); }
+            100% { background: transparent; }
         }
 
         @media (max-width: 600px) {
             .card {
                 padding: 20px;
             }
-            
-            .export-actions {
-                grid-template-columns: 1fr;
-            }
-            
             .logo-text {
                 font-size: 22px;
             }
-            
             .sgpa-value {
                 font-size: 36px;
             }
@@ -689,15 +755,6 @@
                         <div class="input-group">
                             <label for="resultText">Paste Your Result Sheet</label>
                             <textarea id="resultText" rows="6" placeholder="Paste your result sheet text here..."></textarea>
-                        </div>
-                        
-                        <div class="input-group">
-                            <label>Example Format:</label>
-                            <div style="background: #f9f9f9; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 14px; color: #555;">
-                                23CSH-205  Database Management System  49.84  23.75  4.00  B<br>
-                                23CSH-203  Data Structures & Algorithms  45/50  38.50  4.00  B+<br>
-                                23HSS-101  Professional Ethics (Through SWAYAM)  23.75  45.00  3.00  A
-                            </div>
                         </div>
                         
                         <button class="add-btn" id="parseResults">
@@ -783,7 +840,6 @@
                     <div class="sgpa-label">Your Semester Grade Point Average</div>
                     <div class="sgpa-value" id="sgpaValue">0.00</div>
                     <div class="sgpa-scale">Scale: 0.00 - 10.00</div>
-                    
                     <div class="chart-container">
                         <canvas id="gradeChart"></canvas>
                     </div>
@@ -798,7 +854,6 @@
                         <button class="export-btn pdf" id="exportPdf">
                             <i class="fas fa-file-pdf"></i> Export PDF
                         </button>
-                        
                         <button class="export-btn csv" id="exportCsv">
                             <i class="fas fa-file-csv"></i> Export CSV
                         </button>
@@ -808,7 +863,7 @@
         </div>
         
         <footer>
-            <p>Premium SGPA Calculator Pro &copy; 2023 | All calculations done locally on your device | Advanced Parsing Engine v2.0</p>
+            <p>Premium SGPA Calculator Pro &copy; 2023 | All calculations done locally on your device | Advanced Parsing Engine v3.0</p>
         </footer>
     </div>
 
@@ -829,7 +884,7 @@
         const gradeInput = document.getElementById('grade');
         const resultText = document.getElementById('resultText');
         const parseStatus = document.getElementById('parseStatus');
-        
+
         // Grade mapping
         const gradeMap = {
             '10': 'A+',
@@ -841,10 +896,22 @@
             '4': 'D',
             '0': 'F'
         };
-        
+
+        const reverseGradeMap = {
+            'A+': 10,
+            'A': 9,
+            'B+': 8,
+            'B': 7,
+            'C+': 6,
+            'C': 5,
+            'D': 4,
+            'F': 0,
+            'E': 0
+        };
+
         // Subject data
         let subjects = [];
-        
+
         // Initialize Chart
         const ctx = document.getElementById('gradeChart').getContext('2d');
         const gradeChart = new Chart(ctx, {
@@ -857,7 +924,8 @@
                         '#4cc9f0', '#4361ee', '#3a0ca3', '#7209b7',
                         '#f72585', '#ff6b6b', '#ff9e00', '#adb5bd'
                     ],
-                    borderWidth: 0
+                    borderWidth: 0,
+                    hoverOffset: 15
                 }]
             },
             options: {
@@ -873,18 +941,26 @@
                             },
                             padding: 15
                         }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.parsed} subjects`;
+                            }
+                        }
                     }
                 },
                 cutout: '65%'
             }
         });
-        
+
         // Theme Toggle
         themeToggle.addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
-            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+            localStorage.setItem('theme', 
+                document.body.classList.contains('dark-mode') ? 'dark' : 'light');
         });
-        
+
         // Tab Switching
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
@@ -901,9 +977,19 @@
                         content.classList.add('active');
                     }
                 });
+                
+                // Reset inputs when switching tabs
+                if (tabName === 'manual') {
+                    resultText.value = '';
+                    parseStatus.style.display = 'none';
+                } else {
+                    subjectNameInput.value = '';
+                    creditsInput.value = '4';
+                    gradeInput.value = '10';
+                }
             });
         });
-        
+
         // Add Subject
         addSubjectBtn.addEventListener('click', () => {
             const name = subjectNameInput.value.trim();
@@ -911,11 +997,17 @@
             const grade = parseInt(gradeInput.value);
             
             if (!name || isNaN(credits) || isNaN(grade)) {
-                alert('Please fill all fields correctly');
+                showStatus('Please fill all fields correctly', true);
                 return;
             }
             
-            subjects.push({ name, credits, grade });
+            subjects.push({ 
+                name, 
+                credits, 
+                grade,
+                code: name.substring(0, 10) // Generate simple code
+            });
+            
             renderSubjects();
             updateSGPA();
             updateChart();
@@ -928,27 +1020,26 @@
             // Save to localStorage
             saveData();
         });
-        
+
         // Parse Results
         parseResultsBtn.addEventListener('click', () => {
             const text = resultText.value.trim();
             if (!text) {
-                alert('Please paste your result sheet');
+                showStatus('Please paste your result sheet', true);
                 return;
             }
             
             // Show processing status
             parseStatus.style.display = 'flex';
             parseStatus.classList.remove('error');
+            parseStatus.innerHTML = '<i class="fas fa-sync fa-spin"></i> Processing your results...';
             
             // Process in the next tick to allow UI to update
             setTimeout(() => {
                 try {
                     const parsedSubjects = parseResultSheet(text);
-                    
                     if (parsedSubjects.length === 0) {
-                        parseStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> No valid subjects found. Check your format.';
-                        parseStatus.classList.add('error');
+                        showStatus('No valid subjects found. Check your format.', true);
                         return;
                     }
                     
@@ -961,109 +1052,106 @@
                     saveData();
                     
                     // Show success message
-                    parseStatus.innerHTML = `<i class="fas fa-check-circle"></i> Successfully parsed ${parsedSubjects.length} subjects!`;
-                    parseStatus.classList.remove('error');
+                    showStatus(`Successfully parsed ${parsedSubjects.length} subjects!`, false);
                     
                     // Clear text after successful parse
                     resultText.value = '';
+                    
                 } catch (error) {
-                    parseStatus.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error: ${error.message}`;
-                    parseStatus.classList.add('error');
+                    showStatus(`Error: ${error.message}`, true);
                 }
             }, 100);
         });
-        
+
         // Enhanced parsing function
         function parseResultSheet(text) {
             const lines = text.split('\n');
             const subjectData = [];
-            let parsedCount = 0;
-            let skippedCount = 0;
+            const skipKeywords = [
+                'logo', 'user', 'Academics', 'Accounts', 'Administration', 'Apply for Loan Documents',
+                'Apply for NOC', 'Counseling', 'DCPD', 'DLL', 'E Library', 'Examination', 'Hostel',
+                'Library', 'My Profile', 'Online Test', 'PhD', 'Student Leave Application', 
+                'Student Relation Management System', 'TPP', 'Transport', 'UCMC', 'Regular',
+                'Result Type', 'Session', 'Category', 'Disclaimer', 'Chandigarh University',
+                'General Helpline', 'Email Id', 'Report a Bug', 'Qualified', 'UID', 'Name',
+                'Father\'s Name', 'Mother\'s Name', 'Semester', 'SGPA', 'Subject Code',
+                'Subject Name', 'Internal Marks', 'External Marks', 'Credits', 'Grade'
+            ];
+            
+            const gradePattern = /(A\+|A|B\+|B|C\+|C|D|F|E)\b/i;
+            const creditPattern = /\b(\d+\.\d+|\d+)\b/;
+            const codePattern = /([A-Z0-9]{6,8}-[A-Z0-9]{3,4})/;
             
             for (const line of lines) {
-                // Step 1: Trim whitespace and skip empty lines
                 const trimmed = line.trim();
-                if (!trimmed) {
-                    skippedCount++;
-                    continue;
+                if (!trimmed || trimmed.length < 10) continue;
+                
+                // Skip lines with irrelevant keywords
+                if (skipKeywords.some(keyword => 
+                    trimmed.includes(keyword) && keyword.length > 3)) continue;
+                
+                // Find grade in the line
+                const gradeMatch = trimmed.match(gradePattern);
+                if (!gradeMatch) continue;
+                
+                const grade = gradeMatch[0].toUpperCase();
+                const gradePoints = reverseGradeMap[grade] || 0;
+                
+                // Find credits
+                const creditMatches = trimmed.match(creditPattern);
+                if (!creditMatches) continue;
+                
+                // Take the last credit match
+                const credits = parseFloat(creditMatches[creditMatches.length - 1]);
+                if (isNaN(credits)) continue;
+                
+                // Find subject code
+                let code = '';
+                const codeMatch = trimmed.match(codePattern);
+                if (codeMatch) {
+                    code = codeMatch[0];
                 }
                 
-                // Step 2: Skip headers, footers, and status lines
-                if (
-                    trimmed.includes('Subject Code') ||
-                    trimmed.includes('Subject Name') ||
-                    trimmed.includes('Internal Marks') ||
-                    trimmed.includes('External Marks') ||
-                    trimmed.includes('Disclaimer') ||
-                    trimmed.includes('Semester') ||
-                    trimmed.includes('SGPA') ||
-                    trimmed.includes('CGPA') ||
-                    trimmed.includes('Result') ||
-                    trimmed.endsWith('Qualified') ||
-                    trimmed.endsWith('Pass') ||
-                    trimmed.endsWith('Fail')
-                ) {
-                    skippedCount++;
-                    continue;
-                }
+                // Extract subject name
+                let name = trimmed;
                 
-                // Step 3: Split line into parts using tabs or 2+ spaces
-                const parts = trimmed.split(/\t|\s{2,}/).filter(p => p);
+                // Remove code if found
+                if (code) name = name.replace(code, '');
                 
-                // Step 4: Skip lines with insufficient data
-                if (parts.length < 4) {
-                    skippedCount++;
-                    continue;
-                }
-                
-                // Step 5: Extract grade (last element) and validate
-                const grade = parts[parts.length - 1];
-                if (!['A+', 'A', 'B+', 'B', 'C+', 'C', 'D', 'E', 'F'].includes(grade)) {
-                    skippedCount++;
-                    continue;
-                }
-                
-                // Step 6: Extract credits (second-last element) and validate
-                const credits = parseFloat(parts[parts.length - 2]);
-                if (isNaN(credits)) {
-                    skippedCount++;
-                    continue;
-                }
-                
-                // Step 7: Extract subject code (first element)
-                const subjectCode = parts[0];
-                
-                // Step 8: Extract subject name (middle elements)
-                const rawName = parts.slice(1, parts.length - 2).join(' ');
-                
-                // Step 9: Clean subject name
-                const subjectName = rawName
-                    .replace(/\[.*?\]/g, '')       // Remove text in brackets
-                    .replace(/\(.*?\)/g, '')       // Remove text in parentheses
-                    .replace(/\d+\/\d+/g, '')      // Remove fractions (e.g., 45/50)
-                    .replace(/\d+\.\d+/g, '')      // Remove decimal numbers (e.g., 49.84)
-                    .replace(/\s{2,}/g, ' ')       // Replace multiple spaces with one
+                // Remove numbers and special patterns
+                name = name
+                    .replace(/\b\d+\.\d+\b/g, '')    // Remove decimal numbers
+                    .replace(/\b\d+\/\d+\b/g, '')     // Remove fractions
+                    .replace(/\b\d+\b/g, '')           // Remove standalone numbers
+                    .replace(grade, '')                // Remove grade
+                    .replace(creditMatches[0], '')     // Remove credits
+                    .replace(/[^a-zA-Z\s()-]/g, '')    // Remove special chars
+                    .replace(/\s{2,}/g, ' ')           // Remove extra spaces
                     .trim();
                 
-                // Map grade to points
-                const gradePoints = Object.entries(gradeMap).find(
-                    ([points, letter]) => letter === grade
-                )[0];
+                // Skip if name is too short
+                if (name.length < 3) continue;
                 
-                // Step 10: Add to subject data
                 subjectData.push({
-                    code: subjectCode,
-                    name: subjectName,
+                    code: code || name.substring(0, 10),
+                    name: name,
                     credits: credits,
-                    grade: parseInt(gradePoints)
+                    grade: gradePoints
                 });
-                parsedCount++;
             }
             
-            console.log(`Parsed: ${parsedCount} subjects, Skipped: ${skippedCount} lines`);
             return subjectData;
         }
-        
+
+        // Show status message
+        function showStatus(message, isError) {
+            parseStatus.style.display = 'flex';
+            parseStatus.innerHTML = isError 
+                ? `<i class="fas fa-exclamation-triangle"></i> ${message}`
+                : `<i class="fas fa-check-circle"></i> ${message}`;
+            parseStatus.classList.toggle('error', isError);
+        }
+
         // Reset Data
         resetBtn.addEventListener('click', () => {
             if (confirm('Are you sure you want to reset all data?')) {
@@ -1075,104 +1163,119 @@
                 parseStatus.style.display = 'none';
             }
         });
-        
+
         // Export PDF
-        exportPdfBtn.addEventListener('click', () => {
+        exportPdfBtn.addEventListener('click', async () => {
             if (subjects.length === 0) {
-                alert('No data to export');
+                showStatus('No data to export', true);
                 return;
             }
             
-            // Create a new PDF document
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            // Add header
-            doc.setFontSize(22);
-            doc.setTextColor(67, 97, 238);
-            doc.text('SGPA Report', 105, 20, null, null, 'center');
-            
-            doc.setFontSize(12);
-            doc.setTextColor(100, 100, 100);
-            doc.text('Generated by SGPA Calculator Pro', 105, 28, null, null, 'center');
-            
-            // Add current date
-            const now = new Date();
-            doc.text(`Date: ${now.toLocaleDateString()}`, 15, 35);
-            
-            // Add SGPA
-            const sgpa = calculateSGPA();
-            doc.setFontSize(18);
-            doc.setTextColor(0, 0, 0);
-            doc.text(`SGPA: ${sgpa.toFixed(2)}`, 15, 45);
-            
-            // Create table
-            const headers = [['Subject Code', 'Subject Name', 'Credits', 'Grade', 'Points']];
-            const data = subjects.map(subject => [
-                subject.code,
-                subject.name,
-                subject.credits.toString(),
-                gradeMap[subject.grade],
-                subject.grade.toString()
-            ]);
-            
-            // Add table to PDF
-            doc.autoTable({
-                startY: 55,
-                head: headers,
-                body: data,
-                theme: 'grid',
-                headStyles: {
-                    fillColor: [67, 97, 238],
-                    textColor: 255
-                },
-                styles: {
-                    cellPadding: 3,
-                    fontSize: 10
-                }
-            });
-            
-            // Add footer
-            const pageCount = doc.internal.getNumberOfPages();
-            for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                doc.setFontSize(10);
+            try {
+                // Create a new PDF document
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Add header
+                doc.setFontSize(22);
+                doc.setTextColor(67, 97, 238);
+                doc.text('SGPA Report', 105, 20, null, null, 'center');
+                doc.setFontSize(12);
                 doc.setTextColor(100, 100, 100);
-                doc.text(`Page ${i} of ${pageCount}`, 105, 287, null, null, 'center');
+                doc.text('Generated by SGPA Calculator Pro', 105, 28, null, null, 'center');
+                
+                // Add current date and SGPA
+                const now = new Date();
+                const sgpa = calculateSGPA();
+                doc.setFontSize(14);
+                doc.setTextColor(0, 0, 0);
+                doc.text(`Date: ${now.toLocaleDateString()}`, 15, 40);
+                doc.text(`SGPA: ${sgpa.toFixed(2)}`, 15, 50);
+                
+                // Create table
+                const headers = [['Subject Code', 'Subject Name', 'Credits', 'Grade', 'Points']];
+                
+                const data = subjects.map(subject => [
+                    subject.code,
+                    subject.name,
+                    subject.credits.toString(),
+                    gradeMap[subject.grade],
+                    subject.grade.toString()
+                ]);
+                
+                // Add table to PDF
+                doc.autoTable({
+                    startY: 60,
+                    head: headers,
+                    body: data,
+                    theme: 'grid',
+                    headStyles: {
+                        fillColor: [67, 97, 238],
+                        textColor: 255,
+                        fontStyle: 'bold'
+                    },
+                    styles: {
+                        cellPadding: 3,
+                        fontSize: 10,
+                        valign: 'middle'
+                    },
+                    margin: { top: 10 }
+                });
+                
+                // Add footer
+                const pageCount = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(10);
+                    doc.setTextColor(100, 100, 100);
+                    doc.text(`Page ${i} of ${pageCount}`, 105, 287, null, null, 'center');
+                }
+                
+                // Save the PDF
+                doc.save(`SGPA_Report_${now.getTime()}.pdf`);
+                
+            } catch (error) {
+                showStatus('Failed to generate PDF: ' + error.message, true);
             }
-            
-            // Save the PDF
-            doc.save(`SGPA_Report_${now.getTime()}.pdf`);
         });
-        
+
         // Export CSV
         exportCsvBtn.addEventListener('click', () => {
             if (subjects.length === 0) {
-                alert('No data to export');
+                showStatus('No data to export', true);
                 return;
             }
             
-            // Create CSV content
-            let csv = 'Subject Code,Subject Name,Credits,Grade,Points\n';
-            
-            subjects.forEach(subject => {
-                csv += `"${subject.code}","${subject.name}",${subject.credits},"${gradeMap[subject.grade]}",${subject.grade}\n`;
-            });
-            
-            // Create download link
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            
-            link.setAttribute('href', url);
-            link.setAttribute('download', `sgpa_report_${new Date().getTime()}.csv`);
-            link.style.visibility = 'hidden';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            try {
+                // Create CSV content
+                let csv = 'Subject Code,Subject Name,Credits,Grade,Points\n';
+                
+                subjects.forEach(subject => {
+                    csv += `"${subject.code}","${subject.name}",${subject.credits},"${gradeMap[subject.grade]}",${subject.grade}\n`;
+                });
+                
+                // Add SGPA
+                const sgpa = calculateSGPA();
+                csv += `\nSGPA,,,${sgpa.toFixed(2)}`;
+                
+                // Create download link
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                
+                link.setAttribute('href', url);
+                link.setAttribute('download', `sgpa_report_${new Date().getTime()}.csv`);
+                link.style.visibility = 'hidden';
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+            } catch (error) {
+                showStatus('Failed to generate CSV: ' + error.message, true);
+            }
         });
-        
+
         // Delete Subject
         function deleteSubject(index) {
             subjects.splice(index, 1);
@@ -1181,13 +1284,20 @@
             updateChart();
             saveData();
         }
-        
+
         // Render Subjects
         function renderSubjects() {
             resultBody.innerHTML = '';
             
             if (subjects.length === 0) {
-                resultBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px;">No subjects added yet</td></tr>';
+                resultBody.innerHTML = `
+                    <tr class="empty-state">
+                        <td colspan="5">
+                            <i class="fas fa-inbox"></i>
+                            <p>No subjects added yet</p>
+                        </td>
+                    </tr>
+                `;
                 return;
             }
             
@@ -1195,7 +1305,7 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>
-                        <div><strong>${subject.code || 'N/A'}</strong></div>
+                        <div><strong>${subject.code}</strong></div>
                         <div style="font-size: 0.9em; opacity: 0.8;">${subject.name}</div>
                     </td>
                     <td>${subject.credits}</td>
@@ -1210,7 +1320,7 @@
                 resultBody.appendChild(row);
             });
         }
-        
+
         // Calculate SGPA
         function calculateSGPA() {
             if (subjects.length === 0) return 0;
@@ -1225,11 +1335,15 @@
             
             return totalPoints / totalCredits;
         }
-        
+
         // Update SGPA Display
         function updateSGPA() {
             const sgpa = calculateSGPA();
             sgpaValue.textContent = sgpa.toFixed(2);
+            
+            // Add animation
+            sgpaValue.classList.add('highlight');
+            setTimeout(() => sgpaValue.classList.remove('highlight'), 2000);
             
             // Update SGPA display color based on performance
             if (sgpa >= 9.0) {
@@ -1244,7 +1358,7 @@
                 sgpaValue.style.color = '#ff6b6b';
             }
         }
-        
+
         // Update Chart
         function updateChart() {
             // Count grades
@@ -1268,7 +1382,7 @@
             
             gradeChart.update();
         }
-        
+
         // Save data to localStorage
         function saveData() {
             localStorage.setItem('sgpaData', JSON.stringify({
@@ -1276,7 +1390,7 @@
                 theme: document.body.classList.contains('dark-mode') ? 'dark' : 'light'
             }));
         }
-        
+
         // Load data from localStorage
         function loadData() {
             const savedData = localStorage.getItem('sgpaData');
@@ -1290,33 +1404,15 @@
                 }
             }
         }
-        
-        // Security features
-        function applySecurity() {
-            // Disable right-click
-            document.addEventListener('contextmenu', e => e.preventDefault());
-            
-            // Disable developer tools shortcuts
-            document.addEventListener('keydown', e => {
-                // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
-                if (e.key === 'F12' || 
-                    (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-                    (e.ctrlKey && e.shiftKey && e.key === 'J') ||
-                    (e.ctrlKey && e.key === 'u')) {
-                    e.preventDefault();
-                }
-            });
-        }
-        
+
         // Initialize
         function init() {
             loadData();
             renderSubjects();
             updateSGPA();
             updateChart();
-            applySecurity();
         }
-        
+
         // Initialize the application
         init();
     </script>
