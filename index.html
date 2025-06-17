@@ -894,11 +894,35 @@
         </div>
         
         <footer>
-            <p>Premium SGPA Calculator Pro &copy; 2025 | Created By Ankit Tiwari | Advanced Parsing Engine v3.0</p>
+            <p>Premium SGPA Calculator Pro &copy; 2023 | All calculations done locally on your device | Advanced Parsing Engine v3.0</p>
         </footer>
     </div>
 
     <script>
+        // Disable right-click context menu
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Disable common keyboard shortcuts for developer tools
+        document.addEventListener('keydown', event => {
+            // F12
+            if (event.key === 'F12') {
+                event.preventDefault();
+            }
+            // Ctrl+Shift+I (or Cmd+Option+I on Mac)
+            if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'I') {
+                event.preventDefault();
+            }
+            // Ctrl+Shift+J (or Cmd+Option+J on Mac)
+            if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'J') {
+                event.preventDefault();
+            }
+            // Ctrl+U (View Source)
+            if ((event.ctrlKey || event.metaKey) && event.key === 'U') {
+                event.preventDefault();
+            }
+        });
+
+
         // DOM Elements
         const themeToggle = document.getElementById('themeToggle');
         const tabs = document.querySelectorAll('.tab');
